@@ -745,7 +745,7 @@ function Graph(element) {
         return key;
     };
 
-    update_rna_graph = function(r) {
+    self.update_rna_graph = function(r) {
         var nucleotide_positions = r.get_positions('nucleotide');
         var label_positions = r.get_positions('label');
 
@@ -781,7 +781,7 @@ function Graph(element) {
                 r.pairtable[d.source.num] = 0;
                 r.pairtable[d.target.num] = 0;
 
-                update_rna_graph(r);
+                self.update_rna_graph(r);
 
             } else {
                 // 2. The link is between two different molecules
@@ -825,7 +825,7 @@ function Graph(element) {
             r.pairtable[new_link.source.num] = new_link.target.num;
             r.pairtable[new_link.target.num] = new_link.source.num;
 
-            update_rna_graph(r);
+            self.update_rna_graph(r);
 
         } else {
             //Add an extra link

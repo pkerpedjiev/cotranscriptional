@@ -497,7 +497,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
     self.uid = generateUUID();
     self.rna_length = self.dotbracket.length;
 
-    self.elements = {};            //store the elements and the 
+    self.elements = [];            //store the elements and the 
                                    //nucleotides they contain
     self.nucs_to_nodes = {};
 

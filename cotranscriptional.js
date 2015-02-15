@@ -11,7 +11,7 @@ setPlottingArea = function() {
 };
 
 graph = new Graph('#chart');
-rna = new RNAGraph('A', '.', 'sup')
+rna = new RNAGraph('', '', 'sup')
 .elements_to_json()
 .add_labels()
 .reinforce_stems()
@@ -23,4 +23,13 @@ graph.molHeight=300;
 
 graph.addNodes(rna);
 
+function pushNode(rna, graph, nucleotide) {
+    positions = rna.get_positions();
+    rna.seq.push(nucleotide);
+    rna.dotbracket.push('.');
+
+    graph.update_rna_graph();
+}
+
 console.log('hi');
+pushNode(rna, graph, 'C');
