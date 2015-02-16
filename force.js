@@ -58,6 +58,8 @@ function Graph(element) {
         "pseudoknot": 0.00,
         "protein_chain": 0.00,
         "chain_chain": 0.00,
+        "backbone": 10.00,
+        "basepair": 0.00,
         "intermolecule": 10.00,
         "other": 10.00
     };
@@ -164,8 +166,6 @@ function Graph(element) {
                             d.target == self.extraLinks[i].source || d.target == self.extraLinks[i].source) &&
                             d.link_type == 'fake');
                 });
-
-                console.log('fake_links:', fake_links);
 
                 for (var j = 0; j < fake_links.length; j++) {
                     var linkIndex = self.graph.links.indexOf(fake_links[j]); 
@@ -292,7 +292,9 @@ function Graph(element) {
         fake_nodes.style('fill', 'transparent');
         */
 
+        var gnodes = vis_nodes.selectAll('g.gnode');
         var nodes = vis_nodes.selectAll('[node_type=nucleotide]');
+        nodes.each(function(d) {});
         var scale;
         data = nodes.data();
         self.colorScheme = newColorScheme;
@@ -331,9 +333,6 @@ function Graph(element) {
             .interpolate(d3.interpolateLab)
             .domain(self.customColors.domain)
             .range(self.customColors.range);
-
-            console.log('scale.domain', scale.domain())
-
 
             nodes.style('fill', function(d) {
                 if (typeof self.customColors == 'undefined') {
@@ -506,10 +505,6 @@ function Graph(element) {
             min_y += (temp_height - mol_height) / 2;
         }
 
-        console.log('mol_height:', mol_height);
-        console.log('mol_width:', mol_width);
-        console.log('self.molWidth:', self.molWidth);
-
         // how much larger the drawing area is than the width and the height
         width_ratio = self.svgW / mol_width;
         height_ratio = self.svgH / mol_height;
@@ -538,7 +533,7 @@ function Graph(element) {
 
     };
 
-    var force = d3.layout.force()
+    self.force = d3.layout.force()
     .charge(function(d) { if (d.node_type == 'middle')  {
             return -30; 
     }
@@ -623,7 +618,7 @@ function Graph(element) {
             d1.py += d3.event.dy;
         });
 
-        force.resume();
+        self.force.resume();
         d3.event.sourceEvent.preventDefault();
     }
 
@@ -763,7 +758,7 @@ function Graph(element) {
         .connect_fake_nodes();
     };
 
-    remove_link = function(d) {
+    self.remove_link = function(d) {
         // remove a link between two nodes
         index = self.graph.links.indexOf(d);
 
@@ -809,11 +804,11 @@ function Graph(element) {
         if (d.link_type in invalid_links ) 
             return;
 
-        remove_link(d);
+        self.remove_link(d);
     };
 
 
-    add_link =  function(new_link) {
+    self.add_link =  function(new_link) {
         // this means we have a new json, which means we have
         // to recalculate the structure and change the colors
         // appropriately
@@ -880,7 +875,7 @@ function Graph(element) {
             if (mouseup_node.node_type == 'middle' || mousedown_node.node_type == 'middle' || mouseup_node.node_type == 'label' || mousedown_node.node_type == 'label')
                 return;
 
-            add_link(new_link);
+            self.add_link(new_link);
 
         }
     };
@@ -916,29 +911,29 @@ function Graph(element) {
       self.animation = true;
       vis.selectAll('g.gnode')
         .call(drag);
-      force.start();
+      self.force.start();
     };
     
     self.stopAnimation = function() {
       self.animation = false;
       vis.selectAll('g.gnode')
            .on('mousedown.drag', null);
-      force.stop();
+      self.force.stop();
     };
     
     self.setFriction = function(value) {
-      force.friction(value);
-      force.resume();
+      self.force.friction(value);
+      self.force.resume();
     };
 
     self.setCharge = function(value) {
-      force.charge(value);
-      force.resume();
+      self.force.charge(value);
+      self.force.resume();
     };
     
     self.setGravity = function(value) {
-      force.gravity(value);
-      force.resume();
+      self.force.gravity(value);
+      self.force.resume();
     };
     
     self.setPseudoknotStrength = function(value) {
@@ -1067,11 +1062,11 @@ function Graph(element) {
     }
 
     self.update = function () {
-        force.nodes(self.graph.nodes)
+        self.force.nodes(self.graph.nodes)
         .links(self.graph.links);
         
         if (self.animation) {
-          force.start();
+          self.force.start();
         }
 
         var all_links = vis_links.selectAll("line.link")
@@ -1197,18 +1192,17 @@ function Graph(element) {
             var circle_update = gnodes.select('circle');
 
             // create nodes behind the circles which will serve to highlight them
-            var nucleotide_nodes = gnodes.filter(function(d) { 
+            var nucleotide_nodes = gnodes_enter.filter(function(d) { 
                 return d.node_type == 'nucleotide' || d.node_type == 'label';
-            })
-            console.log('nucleotide_nodes', nucleotide_nodes);
+            });
             nucleotide_nodes.append("svg:circle")
             .attr('class', "outline_node")
             .attr("r", function(d) { return d.radius+1; })
             .style('stroke_width', 1)
-            .style('fill', 'red')
+            .style('fill', 'red');
 
 
-            var node = gnodes_enter.append("svg:circle")
+            var node = gnodes.append("svg:circle")
             .attr("class", "node")
             .classed("label", function(d) { return d.node_type == 'label'; })
             .attr("r", function(d) { 
@@ -1225,9 +1219,9 @@ function Graph(element) {
                     return 0;
                 }})
             .style('stroke-width', self.displayParameters.nodeStrokeWidth)
-            .style("fill", node_fill)
+            .style("fill", node_fill);
             
-            var labels = gnodes_enter.append("text")
+            var labels = gnodes.append("text")
             .text(function(d) { return d.name; })
             .attr('text-anchor', 'middle')
             .attr('font-size', 8.0)
@@ -1260,7 +1254,7 @@ function Graph(element) {
             //fake_nodes = self.graph.nodes.filter(function(d) { return true; });
             real_nodes = self.graph.nodes.filter(function(d) { return d.node_type == 'nucleotide' || d.node_type == 'label';});
 
-            force.on("tick", function() {
+            self.force.on("tick", function() {
                 /*
                 var q = d3.geom.quadtree(fake_nodes),
                 i = 0,
@@ -1289,7 +1283,7 @@ function Graph(element) {
         self.changeColorScheme(self.colorScheme);
 
         if (self.animation) {
-          force.start();
+          self.force.start();
         }
 
         self.updateNumbering();

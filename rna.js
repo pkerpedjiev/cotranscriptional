@@ -458,7 +458,7 @@ function ProteinGraph(struct_name, size, uid) {
     };
 
     self.get_uids = function() {
-        /* Get the positions of each node so that they
+        /* Get the uids of each node so that they
          * can be passed to elements_to_json later
          */
         uids = [];
@@ -475,7 +475,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
     self.type = 'rna';
 
-    if (arguments.length == 0) {
+    if (arguments.length === 0) {
         self.seq = '';
         self.dotbracket = '';
         self.struct_name = '';
@@ -493,7 +493,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
         self.circular = true;
     }
 
-    self.pairtable = rnaUtilities.dotbracket_to_pairtable(self.dotbracket);
     self.uid = generateUUID();
     self.rna_length = self.dotbracket.length;
 
@@ -508,8 +507,17 @@ function RNAGraph(seq, dotbracket, struct_name) {
         return self;
     };
 
+    self.compute_pairtable = function() {
+        self.pairtable = rnaUtilities.dotbracket_to_pairtable(self.dotbracket);
+
+        return self;
+    };
+
+    self.compute_pairtable();
+
     self.add_positions = function(node_type, positions) {
         label_nodes = self.nodes.filter(function(d) { return d.node_type == node_type; });
+        console.log('positions.length', node_type, positions.length, label_nodes.length);
 
         for  (var i = 0; i < label_nodes.length; i++) {
             label_nodes[i].x = positions[i][0];
@@ -519,7 +527,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
         }
 
         return self;
-    }
+    };
 
     self.get_positions = function(node_type) {
         positions = [];
@@ -720,7 +728,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
         //of element that a node is part of
         elem_types = {};
 
-        console.log('self.elements:', self.elements);
         if (self.elements.length === 0) {
             return self;
         }
