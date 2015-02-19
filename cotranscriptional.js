@@ -20,6 +20,8 @@ rna = new RNAGraph('', '', 'sup')
 
 graph.molWidth=400;
 graph.molHeight=300;
+graph.showLabels=false;
+graph.force.friction(0.95);
 
 graph.addRNA(rna);
 
@@ -35,7 +37,7 @@ function getNewPosition(positions) {
    var lasterPos = positions[positions.length-2];
    var lastPos = positions[positions.length-1];
    var newPos = [lastPos[0] + (lastPos[0] - lasterPos[0]), 
-                 lastPos[1] + (lastPos[1] - lasterPos[1]) + 0.1];
+                 lastPos[1] + (lastPos[1] - lasterPos[1]) + 2];
 
 
    return newPos;
@@ -68,7 +70,6 @@ function pushNode(nucleotide) {
     graph.recalculateGraph();
     graph.update();
     graph.center_view();
-    console.log('push graph.graph', graph.graph.links);
 }
 
 function addLink(from, to) {
@@ -79,7 +80,7 @@ function addLink(from, to) {
     graph.add_link(new_link);
 
     rna.dotbracket = rnaUtilities.pairtable_to_dotbracket(rna.pairtable);
-    console.log('add_link graph.graph', graph.graph.links);
+    graph.center_view();
 }
 
 function removeLink(from, to) {
@@ -89,10 +90,9 @@ function removeLink(from, to) {
 
     graph.remove_link(theLink[0]);
     rna.dotbracket = rnaUtilities.pairtable_to_dotbracket(rna.pairtable);
-    console.log('remove_link graph.graph', graph.graph.links);
 }
 
-self.
+/*
 pushNode('C');
 time = 0;
 timeStep = 100;
@@ -103,5 +103,89 @@ setTimeout(function() { pushNode('G'); } , time = time + timeStep);
 setTimeout(function() { pushNode('G'); } , time = time + timeStep);
 setTimeout(function() { pushNode('G'); } , time = time + timeStep);
 setTimeout(function() { pushNode('G'); } , time = time + timeStep);
+setTimeout(function() { addLink(2,6); }, time = time + timeStep);
+setTimeout(function() { addLink(1,7); }, time = time + timeStep);
 setTimeout(function() { pushNode('G'); } , time = time + timeStep);
 setTimeout(function() { pushNode('G'); } , time = time + timeStep);
+*/
+                /*
+r = new RNAGraph('UCCGUGAUAGUUUAAUGGUCAGAAUGGGCGCUUGUCGCGUGCCAGAUCGGGGUUCAAUUCCCCGUCGCGGAGC',
+                 '(((((((..(((..........))).(((((.......)))))....(((((.......))))))))))))..', 
+                 'blah');
+                */
+               /*
+r = new RNAGraph('GAAUUGCGGGAAAGGGGUCAACAGCCGUUCAGUACCAAGUCUCAGGGGAAACUUUGAGAUGGCCUUGCAAAGGGUAUGGUAAUAAGCUGACGGACAUGGUCCUAACCACGCAGCCAAGUCCUAAGUCAACAGAUCUUCUGUUGAUAUGGAUGCAGUUC',
+                 '(...((((((...((((((.....(((.((((.(((..(((((((((....)))))))))..((.......))....)))......)))))))....))))))..)).))))..)..((((..((((((((((...))))))))).))))).......',
+                 'blah');
+                 */
+               /*
+r = new RNAGraph('UGGAGAGUUUGAUCCUGGCUCAGGGUGAACGCUGGCGGCGUGCCUAAGACAUGCAAGUCGUGCGGGCCGCGGGGUUUUACUCCGUGGUCAGCGGCGGACGGGUGAGUAACGCGUGGGUGACCUACCCGGAAGAGGGGGACAACCCGGGGAAACUCGGGCUAAUCCCCCAUGUGGACCCGCCCCUUGGGGUGUGUCCAAAGGGCUUUGCCCGCUUCCGGAUGGGCCCGCGUCCCAUCAGCUAGUUGGUGGGGUAAUGGCCCACCAAGGCGACGACGGGUAGCCGGUCUGAGAGGAUGGCCGGCCACAGGGGCACUGAGACACGGGCCCCACUCCUACGGGAGGCAGCAGUUAGGAAUCUUCCGCAAUGGGCGCAAGCCUGACGGAGCGACGCCGCUUGGAGGAAGAAGCCCUUCGGGGUGUAAACUCCUGAACCCGGGACGAAACCCCCGACGAGGGGACUGACGGUACCGGGGUAAUAGCGCCGGCCAACUCCGUGCCAGCAGCCGCGGUAAUACGGAGGGCGCGAGCGUUACCCGGAUUCACUGGGCGUAAAGGGCGUGUAGGCGGCCUGGGGCGUCCCAUGUGAAAGACCACGGCUCAACCGUGGGGGAGCGUGGGAUACGCUCAGGCUAGACGGUGGGAGAGGGUGGUGGAAUUCCCGGAGUAGCGGUGAAAUGCGCAGAUACCGGGAGGAACGCCGAUGGCGAAGGCAGCCACCUGGUCCACCCGUGACGCUGAGGCGCGAAAGCGUGGGGAGCAAACCGGAUUAGAUACCCGGGUAGUCCACGCCCUAAACGAUGCGCGCUAGGUCUCUGGGUCUCCUGGGGGCCGAAGCUAACGCGUUAAGCGCGCCGCCUGGGGAGUACGGCCGCAAGGCUGAAACUCAAAGGAAUUGACGGGGGCCCGCACAAGCGGUGGAGCAUGUGGUUUAAUUCGAAGCAACGCGAAGAACCUUACCAGGCCUUGACAUGCUAGGGAACCCGGGUGAAAGCCUGGGGUGCCCCGCGAGGGGAGCCCUAGCACAGGUGCUGCAUGGCCGUCGUCAGCUCGUGCCGUGAGGUGUUGGGUUAAGUCCCGCAACGAGCGCAACCCCCGCCGUUAGUUGCCAGCGGUUCGGCCGGGCACUCUAACGGGACUGCCCGCGAAAGCGGGAGGAAGGAGGGGACGACGUCUGGUCAGCAUGGCCCUUACGGCCUGGGCGACACACGUGCUACAAUGCCCACUACAAAGCGAUGCCACCCGGCAACGGGGAGCUAAUCGCAAAAAGGUGGGCCCAGUUCGGAUUGGGGUCUGCAACCCGACCCCAUGAAGCCGGAAUCGCUAGUAAUCGCGGAUCAGCCAUGCCGCGGUGAAUACGUUCCCGGGCCUUGUACACACCGCCCGUCACGCCAUGGGAGCGGGCUCUACCCGAAGUCGCCGGGAGCCUACGGGCAGGCGCCGAGGGUAGGGCCCGUGACUGGGGCGAAGUCGUAACAAGGUAGCUGUACCGGAAGGUGCGGCUGGAUCA',
+                 '....((((.........)))).((((.(((((..(((((((((....(((.(((..(((..((.((((((((((.....)))))))))).)))))......(((......((((((((..((...(((((((.(((((....((((((....)))))).....)))))....((((.(((((....))))).))))...((((...)))).)))))))..))))))))))(((....(((..((((((((.......)))))))))))......)))..((((((((....))))...))))))).(((((............))))).(((((..)))))...)))))).).....(.(((...(((((....)))).))))).)).))))))..((((......((((....)))).....))))....(((((...(....((((.....)))).....)....)))))......(((((......(((((.....((....)).......))))))))))..)))))))))..........(((.....(.((((...(((.(((((((.((((((((((......((((((.....))))))....))))))))..)))))))))..(((((((((...((((((((....((((((....((........)).......))))))....).......((....)).)))))))..))))).)))..))))...))))....((((((...((...((((.........))))...))))))))..........((((((..((((((((((...))))))))))...((....)).....)))))))))).(((......((((....))))....)))........(((((.(((((((.((..(((((..((((((((((......((........))........(.(((((((..(...(............((((....))))...........................)).((.(((...((((((.(....(((((((((....)))...(((......)))...)))))).....((((.(((((.(..((...(((.....)))).)...).)))))..(..(((((....))))).....)..)))).....).).)))...)).)))))....))))))))..)).)))))))).(...(((((((.....(((..((..((((....))))..))....))).....)))))))......(....(((((((........)))))))....)..)..))))).....(((((((.(.....)..)))))))......))...)))))))))).))..(.(..((.(.((((.(((..((((((.((((((...(.((((....(((....))).)))).)..)))))).))))))..))).))))..).))...)..)..(((((((((....)))))))))......', 
+                 'blah');
+                 */
+
+r = new RNAGraph('aaaaaaaaaaaaaa',
+                 '...(((...)))..',
+                 'blah');
+r.compute_pairtable();
+
+var pairs = [];
+var alreadyAdded = {};
+
+console.log('r.seq', r.seq);
+
+for (var i = 1; i <= r.pairtable[0]; i++) {
+    if (r.pairtable[i] !== 0) {
+        var toAdd = [i, r.pairtable[i]].sort(function(a,b) { return +b - +a; });
+        console.log('toAdd', toAdd);
+
+        if (!("".concat(toAdd) in alreadyAdded)) {
+            pairs.push(toAdd);
+            alreadyAdded["".concat(toAdd)] = true;
+        }
+    }
+}
+
+pairs = pairs.sort(function(a,b) { return -(+a[0] - +b[0]); });
+
+time = 0;
+timeStep = 200;
+
+function timedPushNode(nucleotide) {
+    return function() {
+        pushNode(nucleotide);
+    };
+}
+
+function timedAddLink(from, to) {
+    return function() {
+        addLink(from, to);
+    };
+}
+
+for (var i = 0; i < r.seq.length; i++) {
+    var nucleotide = r.seq[i];
+    var nucNum = i+1;
+
+    setTimeout(timedPushNode(nucleotide), time = time + timeStep);
+
+    if (pairs.length > 0) {
+        console.log('currPair:', pairs[pairs.length-1]);
+        if (nucNum === pairs[pairs.length-1][0]) {
+            //this is a pair we can already make because the
+            //first partner in the pair is always greater than
+            // the second
+            pair = pairs.pop();
+            console.log('pair:', pair);
+            setTimeout(timedAddLink(pair[0], pair[1]), time = time + timeStep);
+        }
+    }
+}
+
+/*
+for (i = 0; i < pairs.length; i++) {
+    var pair = pairs[i];
+    setTimeout(function() { addLink(pair[0],pair[1]); }, time = time + timeStep);
+}
+*/
+

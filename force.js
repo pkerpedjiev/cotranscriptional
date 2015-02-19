@@ -32,6 +32,7 @@ function Graph(element) {
     // these can be set so that 
     self.molWidth = null;
     self.molHeight = null;
+    self.showLabels = true;
 
     var fill = d3.scale.category20();
 
@@ -59,7 +60,7 @@ function Graph(element) {
         "protein_chain": 0.00,
         "chain_chain": 0.00,
         "backbone": 10.00,
-        "basepair": 0.00,
+        "basepair": 10.00,
         "intermolecule": 10.00,
         "other": 10.00
     };
@@ -494,14 +495,24 @@ function Graph(element) {
         if (self.molWidth === null)
             mol_width = temp_width;
         else {
-            mol_width = self.molWidth;
+            if (temp_width < self.molWidth)
+                mol_width = self.molWidth;
+            else
+                mol_width = temp_width;
+
             min_x += (temp_width - mol_width) / 2;
         }
 
         if (self.molHeight === null)
             mol_height = temp_height;
         else {
-            mol_height = self.molHeight;
+            if (temp_height < self.molHeight)
+                mol_height = self.molHeight;
+            else
+                mol_height = temp_height;
+
+
+            console.log('temp_height:', temp_height, "mol_mol_height:", mol_height);
             min_y += (temp_height - mol_height) / 2;
         }
 
@@ -750,10 +761,12 @@ function Graph(element) {
         .elements_to_json()
         .add_pseudoknots()
         .add_positions('nucleotide', nucleotide_positions)
-        .add_uids(uids)
-        .add_labels()
-        .add_positions('label', label_positions)
-        .reinforce_stems()
+        .add_uids(uids);
+
+        if (self.showLabels)
+            r.add_labels().add_positions('label', label_positions);
+
+        r.reinforce_stems()
         .reinforce_loops()
         .connect_fake_nodes();
     };
@@ -911,7 +924,7 @@ function Graph(element) {
       self.animation = true;
       vis.selectAll('g.gnode')
         .call(drag);
-      self.force.start();
+      self.force.resume();
     };
     
     self.stopAnimation = function() {

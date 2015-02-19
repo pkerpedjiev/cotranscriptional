@@ -338,7 +338,7 @@ function ColorScheme(colors_text) {
                 curr_molecule = lines[i].trim().slice(1);
                 counter = 1;
 
-                colors_json[curr_molecule] = {};
+                colors_json.color_values[curr_molecule] = {};
                 continue;
             }
 
@@ -517,7 +517,6 @@ function RNAGraph(seq, dotbracket, struct_name) {
 
     self.add_positions = function(node_type, positions) {
         label_nodes = self.nodes.filter(function(d) { return d.node_type == node_type; });
-        console.log('positions.length', node_type, positions.length, label_nodes.length);
 
         for  (var i = 0; i < label_nodes.length; i++) {
             label_nodes[i].x = positions[i][0];
@@ -577,7 +576,8 @@ function RNAGraph(seq, dotbracket, struct_name) {
         };
 
         for (i=0; i < self.elements.length; i++) {
-            if (self.elements[i][0] == 's' || self.elements[i][0] == 'e')
+            //if (self.elements[i][0] == 's' || self.elements[i][0] == 'e')
+            if (self.elements[i][0] == 's')
                 continue;
 
             var nucs = self.elements[i][2].filter(filter_nucs);
