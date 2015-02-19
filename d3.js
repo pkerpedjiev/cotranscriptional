@@ -6105,7 +6105,6 @@
             };
         }
         force.tick = function() {
-            console.log('alpha:', alpha);
             if ((alpha *= .99) < .005) {
                 event.end({
                     type: "end",
@@ -6226,14 +6225,12 @@
                     type: "start",
                     alpha: alpha = x
                 });
-                /*
                 setTimeout(function tick(){
                     force.tick();
                     if(alpha >= .005)
-                        setTimeout(tick, 100);
+                        setTimeout(tick, 0);
                 }, 0);
-                */
-                d3.timer(force.tick);
+                //d3.timer(force.tick);
             }
             return force;
         };
