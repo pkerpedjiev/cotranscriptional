@@ -10,25 +10,26 @@ setPlottingArea = function() {
   $("#plotting-area").width(chartwidth);
 };
 
-graph = new Graph('#chart');
-rna = new RNAGraph('', '', 'sup')
-.elements_to_json()
-.add_labels()
-.reinforce_stems()
-.reinforce_loops()
-.connect_fake_nodes();
+var graph = new FornaForce('#chart');
+var rna = new RNAGraph('', '', 'sup')
+.elementsToJson()
+.addLabels()
+.reinforceStems()
+.reinforceLoops()
+.connectFakeNodes();
 
 graph.molWidth=400;
 graph.molHeight=300;
-graph.showLabels=false;
-graph.force.friction(0.95);
+graph.labelInterval=0;
+graph.force.friction(0.80);
 
-graph.addRNA(rna);
+graph.addRNAJSON(rna);
+
+counter = 0;
 
 function getNewPosition(positions) {
    var bondLength = 15;
 
-   console.log('positions:', positions);
    if (positions.length === 0)
        return [0,0];
 
@@ -41,27 +42,28 @@ function getNewPosition(positions) {
    var dy = lastPos[1] - lasterPos[1];
    var newPos = [lastPos[0] + dx, 
                  lastPos[1] + dy + 2];
-    console.log('lasterPos', lasterPos, 'lastPos', lastPos, 'newPos', newPos);
-    console.log('mag', Math.sqrt(dx * dx + dy * dy));
-
 
    return newPos;
 }
 
 function pushNode(nucleotide) {
-    positions = rna.get_positions('nucleotide');
+    var d = new Date();
+    var n = d.getTime();
+    var positions = rna.get_positions('nucleotide');
+    var uids = rna.get_uids();
 
     var newPos = getNewPosition(positions);
 
     rna.seq += nucleotide;
     rna.dotbracket += '.';
-    rna.rna_length += 1;
+    rna.rnaLength += 1;
 
-    rna.compute_pairtable();
-    rna.recalculate_elements().elements_to_json();
+    rna.computePairtable();
+    rna.recalculateElements().elementsToJson();
 
     positions.push(newPos);
-    rna.add_positions('nucleotide', positions);
+    rna.addPositions('nucleotide', positions).addUids(uids);
+    rna.reinforceStems().reinforceLoops().connectFakeNodes();
 
     /*
     var lastNode = rna.nodes[rna.nodes.length-1];
@@ -71,21 +73,31 @@ function pushNode(nucleotide) {
     lastNode.py = newPos[1];
     */
 
-    graph.update_rna_graph(rna);
+    //graph.update_rna_graph(rna);
     graph.recalculateGraph();
     graph.update();
     graph.center_view();
+
+    counter += 1;
+    var d1 = new Date();
+        var n1 = d1.getTime();
+    console.log('pushNode time:', n1 - n);
 }
 
 function addLink(from, to) {
+    var d = new Date();
+    var n = d.getTime();
     var fromNode = rna.nodes[from-1];
     var toNode = rna.nodes[to-1];
 
     var new_link = {source: fromNode, target: toNode};
     graph.add_link(new_link);
 
-    rna.dotbracket = rnaUtilities.pairtable_to_dotbracket(rna.pairtable);
+    rna.dotbracket = rnaUtilities.pairtableToDotbracket(rna.pairtable);
     graph.center_view();
+    var d1 = new Date();
+        var n1 = d1.getTime();
+    console.log('addLink time:', n1 - n);
 }
 
 function removeLink(from, to) {
@@ -94,7 +106,7 @@ function removeLink(from, to) {
     });
 
     graph.remove_link(theLink[0]);
-    rna.dotbracket = rnaUtilities.pairtable_to_dotbracket(rna.pairtable);
+    rna.dotbracket = rnaUtilities.pairtableToDotbracket(rna.pairtable);
 }
 
 /*
@@ -129,25 +141,22 @@ r = new RNAGraph('UGGAGAGUUUGAUCCUGGCUCAGGGUGAACGCUGGCGGCGUGCCUAAGACAUGCAAGUCGUG
                  'blah');
                  */
 
-                /*
 r = new RNAGraph('aaaaaaaaaaaaaa',
                  '...(((...)))..',
                  'blah');
-                 */
+                /*
 r = new RNAGraph('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
                  '...(((...)))..(((((((...)))))))...(((((...)))))',
                  'blah');
-r.compute_pairtable();
+                 */
+r.computePairtable();
 
 var pairs = [];
 var alreadyAdded = {};
 
-console.log('r.seq', r.seq);
-
 for (var i = 1; i <= r.pairtable[0]; i++) {
     if (r.pairtable[i] !== 0) {
         var toAdd = [i, r.pairtable[i]].sort(function(a,b) { return +b - +a; });
-        console.log('toAdd', toAdd);
 
         if (!("".concat(toAdd) in alreadyAdded)) {
             pairs.push(toAdd);
@@ -161,9 +170,22 @@ pairs = pairs.sort(function(a,b) { return -(+a[0] - +b[0]); });
 time = 0;
 timeStep = 500;
 
+function timedPushNodes(nucleotides) {
+    return function() {
+        var toPush = nucleotides.shift();
+        pushNode(toPush);
+
+        if (nucleotides.length === 0) 
+            graph.force.on('end', function() {});
+        else
+            graph.force.on('end', timedPushNodes(nucleotides));
+    };
+}
+
 function timedPushNode(nucleotide) {
     return function() {
         pushNode(nucleotide);
+        graph.force.on('end', function() {});
     };
 }
 
@@ -173,24 +195,41 @@ function timedAddLink(from, to) {
     };
 }
 
+function executeBuilding(functions) {
+    return function() {
+        var toExecute = functions.shift();
+        toExecute();
+
+        if (functions.length === 0)
+            graph.force.on('end', function() {});
+        else
+            graph.force.on('end', executeBuilding(functions));
+    };
+}
+
+//var nucleotides = r.seq.split("");
+//graph.force.on('end', timedPushNodes(nucleotides));
+//setTimeout(timedPushNode('a'), 100);
+
+var theFunctions = [];
 for (var i = 0; i < r.seq.length; i++) {
     var nucleotide = r.seq[i];
     var nucNum = i+1;
 
-    setTimeout(timedPushNode(nucleotide), time = time + timeStep);
+    theFunctions.push(timedPushNode(nucleotide));
 
     if (pairs.length > 0) {
-        console.log('currPair:', pairs[pairs.length-1]);
         if (nucNum === pairs[pairs.length-1][0]) {
             //this is a pair we can already make because the
             //first partner in the pair is always greater than
             // the second
             pair = pairs.pop();
-            console.log('pair:', pair);
-            setTimeout(timedAddLink(pair[0], pair[1]), time = time + timeStep);
+            theFunctions.push(timedAddLink(pair[0], pair[1]));
         }
     }
 }
+
+graph.force.on('end', executeBuilding(theFunctions));
 
 /*
 for (i = 0; i < pairs.length; i++) {

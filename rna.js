@@ -927,7 +927,7 @@ function RNAGraph(seq, dotbracket, struct_name) {
         }
 
         return self;
-    }
+    };
 
     self.recalculate_elements = function() {
         self.remove_pseudoknots();
@@ -965,7 +965,14 @@ function RNAGraph(seq, dotbracket, struct_name) {
     };
 
     self.remove_pseudoknots = function() {
+        var d = new Date();
+        var n = d.getTime();
+        
+        console.log('n', n);
         self.pseudoknot_pairs = rnaUtilities.remove_pseudoknots_from_pairtable(self.pairtable);
+        var d1 = new Date();
+            var n1 = d1.getTime();
+        console.log('remove_pk time:', n1 - n);
 
         return self;
     };
